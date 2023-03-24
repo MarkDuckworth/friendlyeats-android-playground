@@ -2,12 +2,7 @@ package com.google.firebase.example.fireeats
 
 import android.app.Activity
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
@@ -22,9 +17,9 @@ import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.example.fireeats.databinding.FragmentMainBinding
 import com.google.firebase.example.fireeats.adapter.RestaurantAdapter
-import com.google.firebase.example.fireeats.model.Restaurant
+import com.google.firebase.example.fireeats.databinding.FragmentMainBinding
+import com.google.firebase.example.fireeats.util.RestaurantUtil
 import com.google.firebase.example.fireeats.viewmodel.MainActivityViewModel
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -32,6 +27,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import java.io.InputStream
+
 
 class MainFragment : Fragment(),
     FilterDialogFragment.FilterListener,
@@ -70,6 +67,8 @@ class MainFragment : Fragment(),
 
         // Firestore
         firestore = Firebase.firestore
+
+        FirebaseFirestore.getInstance().clearPersistence()
 
         // RecyclerView
         query?.let {
@@ -134,6 +133,9 @@ class MainFragment : Fragment(),
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.menu_add_items -> onAddItemsClicked()
+            R.id.load_and_query -> loadAndQuery()
+            R.id.load_only -> loadOnly()
+            R.id.query_only -> queryOnly()
             R.id.menu_sign_out -> {
                 AuthUI.getInstance().signOut(requireContext())
                 startSignIn()
@@ -198,17 +200,59 @@ class MainFragment : Fragment(),
     private fun startSignIn() {
         // Sign in with FirebaseUI
         val intent = AuthUI.getInstance().createSignInIntentBuilder()
-                .setAvailableProviders(listOf(AuthUI.IdpConfig.EmailBuilder().build()))
-                .setIsSmartLockEnabled(false)
-                .build()
+            .setAvailableProviders(listOf(AuthUI.IdpConfig.EmailBuilder().build()))
+            .setIsSmartLockEnabled(false)
+            .build()
 
         signInLauncher.launch(intent)
         viewModel.isSigningIn = true
     }
 
     private fun onAddItemsClicked() {
-        // TODO(developer): Add random restaurants
-        showTodoToast()
+        val restaurantsRef = firestore.collection("restaurants")
+        for (i in 0..9) {
+            // Create random restaurant / ratings
+            val randomRestaurant = RestaurantUtil.getRandom(requireContext())
+
+            // Add restaurant
+            restaurantsRef.add(randomRestaurant)
+        }
+    }
+
+    private fun loadAndQuery() {
+        val databaseInputStream: InputStream = resources.openRawResource(R.raw.bundle)
+
+        firestore.loadBundle(databaseInputStream).addOnSuccessListener { _ ->
+            firestore.getNamedQuery("myNamedQuery").addOnSuccessListener { namedQuery ->
+                //firestore.collection("foo").limit(10)
+                namedQuery.addSnapshotListener { value, error ->
+                    showToast("Snapshot received from named query: " + value?.documents?.size)
+                }
+            }
+        }
+            .addOnFailureListener { exception ->
+                showToast("failed to load bundle: " + exception.message)
+            }
+    }
+
+    private fun queryOnly() {
+        firestore.getNamedQuery("myNamedQuery").addOnSuccessListener { namedQuery ->
+            //firestore.collection("foo").limit(10)
+            namedQuery.addSnapshotListener { value, error ->
+                showToast("Snapshot received from named query: " + value?.documents?.size)
+            }
+        }
+    }
+
+    private fun loadOnly() {
+        val databaseInputStream: InputStream = resources.openRawResource(R.raw.bundle)
+
+        firestore.loadBundle(databaseInputStream).addOnSuccessListener { _ ->
+            showToast("Loaded bundle")
+        }
+            .addOnFailureListener { exception ->
+                showToast("failed to load bundle: " + exception.message)
+            }
     }
 
     private fun showSignInErrorDialog(@StringRes message: Int) {
@@ -225,6 +269,11 @@ class MainFragment : Fragment(),
     private fun showTodoToast() {
         Toast.makeText(context, "TODO: Implement", Toast.LENGTH_SHORT).show()
     }
+
+    private fun showToast(s: String) {
+        Toast.makeText(context, s, Toast.LENGTH_SHORT).show()
+    }
+
 
     companion object {
 

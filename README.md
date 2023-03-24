@@ -1,22 +1,20 @@
-# Friendly Eats
+# Friendly Eats - Bundles and Snapshot repro
 
 
+## Regenerate the bundle
 
-This is the source code that accompanies the Firestore Android Codelab:
-https://codelabs.developers.google.com/codelabs/firestore-android
+1) Start firebase emulator
+2) cd makebundle
+3) npm install
+4) npm run bundle
 
-The codelab will walk you through developing an Android restaurant recommendation
-app powered by Cloud Firestore.
+## Repro
+1) Start firebase emulator
+2) Build and run app on android emulator
+3) Sign up with any test credentials
+4) Click top right "..." menu
+5) Click "Load Only" -> ensure the toast message shows that the bundle was loaded successfully
+6) In android studio, open "Run" tab. Here you should see the output of Firebase debug log
+7) Click "Query Only" -> ensure the toast indicates that a snapshot was loaded.
+8) Find the "com.google.firestore.v1.ListenRequest" proto in the debug log output and observe that "read_time" is not set.
 
-<img src="docs/home.png" width="300"/>
-
-If you don't want to do the codelab and would rather view the completed
-sample code, see the Firebase Android Quickstart repository:
-https://github.com/firebase/quickstart-android
-
-## Build Status
-
-[![Actions Status][gh-actions-badge]][gh-actions]
-
-[gh-actions]: https://github.com/firebase/friendlyeats-android/actions
-[gh-actions-badge]: https://github.com/firebase/friendlyeats-android/workflows/Android%20CI/badge.svg

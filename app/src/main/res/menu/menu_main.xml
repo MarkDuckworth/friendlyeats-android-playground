@@ -10,4 +10,16 @@
         android:id="@+id/menu_add_items"
         android:title="@string/add_random_items" />
 
+    <item
+        android:id="@+id/load_and_query"
+        android:title="@string/load_and_query" />
+
+    <item
+        android:id="@+id/load_only"
+        android:title="@string/load_only" />
+
+    <item
+        android:id="@+id/query_only"
+        android:title="@string/query_only" />
+
 </menu>

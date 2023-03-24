@@ -27,6 +27,9 @@
     <string name="sorted_by_price">sorted by price</string>
     <string name="sorted_by_popularity">sorted by popularity</string>
 
+    <string name="load_and_query">Load and Query</string>
+    <string name="load_only">Load Only</string>
+    <string name="query_only">Query Only</string>
     <string name="add_random_items">Add Random Items</string>
     <string name="sign_out">Sign Out</string>
     <string name="divider_bullet">•</string>
